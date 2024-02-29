@@ -1,4 +1,4 @@
-package com.study.jpa.todo;
+package com.study.jpa.todo.controller;
 
 import com.study.jpa.todo.dto.ResponseDTO;
 import com.study.jpa.todo.dto.TestRequestBodyDTO;
