@@ -3,6 +3,7 @@ package com.study.jpa.todo.controller;
 import com.study.jpa.todo.dto.ResponseDTO;
 import com.study.jpa.todo.dto.UserDTO;
 import com.study.jpa.todo.model.UserEntity;
+import com.study.jpa.todo.security.TokenProvider;
 import com.study.jpa.todo.service.UserService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,6 +19,9 @@ import org.springframework.web.bind.annotation.RestController;
 public class UserController {
     @Autowired
     private UserService userService;
+
+    @Autowired
+    private TokenProvider tokenProvider;
 
     //회원 가입 -> /signup
     @PostMapping("/signup")
@@ -50,10 +54,14 @@ public class UserController {
     @PostMapping("/signin")
     public ResponseEntity<?> authenticate(@RequestBody UserDTO userDTO) {
         UserEntity user = userService.getByCredential(userDTO.getUsername(), userDTO.getPassword());
+
         if(user != null) {
-            final UserDTO responseUserDTO = UserDTO.builder()
+            //토큰 생성 후 dto에 반환
+            final String token = tokenProvider.create(user);
+            UserDTO responseUserDTO = UserDTO.builder()
                     .username(user.getUsername())
                     .id(user.getId())
+                    .token(token)
                     .build();
             return ResponseEntity.ok().body(responseUserDTO);
         } else {
@@ -63,4 +71,12 @@ public class UserController {
             return ResponseEntity.badRequest().body(responseErrorDTO);
         }
     }
+    /*
+    {
+    "token": "eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiI0MDI4ODBiZjhlNDY0ZDFlMDE4ZTQ2NGQzMWMxMDAwMCIsImlzcyI6ImRlbW8gYXBwIiwiaWF0IjoxNzEwNTc2NDU0LCJleHAiOjE3MTA2NjI4NTR9.DnP1vyUDKQospodt9XoqxPgJegE0uuCdg2zatJY5bjV57kUI8nfl9qIHFV9kco3__S2cS6bzQUSvB5WIDfT_dg",
+    "username": "test",
+    "password": null,
+    "id": "402880bf8e464d1e018e464d31c10000"
+    }
+     */
 }
